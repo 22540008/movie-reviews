@@ -13,7 +13,7 @@ import Navbar from 'react-bootstrap/Navbar';
 // 22540008 //Navbar expand="lg" className="bg-body-tertiary"
 function App() {
   const [user, setUser] = React.useState(null);
-  async function login(user = "22540008") { // click -> login user 22540008
+  async function login(user = null) { // Mặc định user = null
     setUser(user);
   }
   async function logout() {
@@ -41,9 +41,10 @@ function App() {
             </Navbar.Collapse>
         </Navbar>
         <Routes>
+          {/* Từ React Router 6.0, Route không sử dụng render và components để render compnent. Thay vào đó, nó sử dụng 'element' prop và truyền vào một JSX element */}
           <Route path="/" element={<MoviesList />} />
           <Route path="/movies" element={<MoviesList />} />
-          <Route path="/movies/:id/review" element={<AddReview user={user} />} />
+          <Route path="movies/:id/review" element={<AddReview user={user} />} />
           <Route path="/movies/:id/" element={<Movie user={user} />} />
           <Route path="/login" element={<Login login={login} />} />
         </Routes>
@@ -54,3 +55,21 @@ function App() {
 
 export default App;
 
+{/* 
+<Route exact path={["/", "/movies"]}
+  component={MoviesList}>
+</Route>
+<Route path="movies/:id/review" render={(props) =>
+  <AddReview {...props} user={user} />
+  } >
+</Route>
+<Route path="/movies/:id/" render={(props) =>{
+  console.log(props.match.params.id);
+  <Movie {...props} user={user} />
+}}>
+</Route>
+<Route path="/login" render={(props) =>
+  <Login {...props} login={login} />
+  }>
+</Route> 
+*/}
