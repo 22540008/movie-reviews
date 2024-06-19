@@ -15,16 +15,30 @@ const MoviesList = (props) => {
   const [ratings, setRatings] = useState(["All Ratings"]);
   const [currentPage, setCurrentPage] = useState(0);
   const [entriesPerPage, setEntriesPerPage] = useState(0);
+  const [currentSearchMode, setCurrentSearchMode] = useState("");
   // 22540008
   useEffect(() => {
     retrieveMovies();
     retrieveRatings();
   }, []);
   useEffect(() => {
-    retrieveMovies(currentPage); // Pass currentPage to retrieveMovies
+    setCurrentPage(0);
+  }, [currentSearchMode]);
+  useEffect(() => {
+    //retrieveMovies(currentPage); // Pass currentPage to retrieveMovies
+    retrieveNextPage(currentPage);
   }, [currentPage]);
-  const retrieveMovies = (page) => {
-    MovieDataService.getAll(page) // Adjust API call to accept a page paramter
+  const retrieveNextPage = () => {
+    if(currentSearchMode === "findByTitle")
+    findByTitle();
+    else if(setCurrentSearchMode === "findByRating")
+    findByRating();
+    else
+    retrieveMovies();
+  }
+  const retrieveMovies = () => {
+    setCurrentSearchMode("");
+    MovieDataService.getAll(currentPage) // Adjust API call to accept a page paramter
       .then((response) => {
         console.log(response.data);
         setMovies(response.data.movies);
@@ -57,7 +71,7 @@ const MoviesList = (props) => {
   };
   //22540008
   const find = (query, by) => {
-    MovieDataService.find(query, by)
+    MovieDataService.find(query, by, currentPage)
       .then((response) => {
         console.log(response.data);
         setMovies(response.data.movies);
@@ -67,9 +81,11 @@ const MoviesList = (props) => {
       });
   };
   const findByTitle = () => {
+    setCurrentSearchMode("findByTitle");
     find(searchTitle, "title");
   };
   const findByRating = () => {
+    setCurrentSearchMode("findByRating");
     if (searchRating === "All Ratings") {
       retrieveMovies();
     } else {
