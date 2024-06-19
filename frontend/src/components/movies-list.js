@@ -13,16 +13,23 @@ const MoviesList = (props) => {
   const [searchTitle, setSearchTitle] = useState("");
   const [searchRating, setSearchRating] = useState("");
   const [ratings, setRatings] = useState(["All Ratings"]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [entriesPerPage, setEntriesPerPage] = useState(0);
   // 22540008
   useEffect(() => {
     retrieveMovies();
     retrieveRatings();
   }, []);
-  const retrieveMovies = () => {
-    MovieDataService.getAll()
+  useEffect(() => {
+    retrieveMovies(currentPage); // Pass currentPage to retrieveMovies
+  }, [currentPage]);
+  const retrieveMovies = (page) => {
+    MovieDataService.getAll(page) // Adjust API call to accept a page paramter
       .then((response) => {
         console.log(response.data);
         setMovies(response.data.movies);
+        setCurrentPage(response.data.page);
+        setEntriesPerPage(response.data.entries_per_page);
       })
       .catch((e) => {
         console.log(e);
@@ -120,16 +127,19 @@ const MoviesList = (props) => {
           })}
         </Row>
       </Container>
+      <br />
+      Showing page: {currentPage}.
+      <Button
+        variant="link"
+        onClick={() => {
+          setCurrentPage(currentPage + 1);
+        }}
+      >
+        Get next {entriesPerPage} results
+      </Button>
     </div>
   );
 };
 
 export default MoviesList;
 
-// function MoviesList() {
-//   return (
-//     <div className="App">
-//       Movies List
-//     </div>
-//   );
-// }

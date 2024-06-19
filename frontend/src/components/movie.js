@@ -8,6 +8,7 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 // 22540008
 const Movie = (props) => {
   const [movie, setMovie] = useState({
@@ -18,6 +19,7 @@ const Movie = (props) => {
   });
   // 22540008
   const { id } = useParams();
+  const navigate = useNavigate();
   const getMovie = (id) => {
     console.log(id);
     MovieDataService.get(id)
@@ -33,6 +35,19 @@ const Movie = (props) => {
     getMovie(id);
   }, [id]);
   // 22540008
+  const deleteReview = (reviewId, index) => {
+    MovieDataService.deleteReview(reviewId, props.user.id)
+      .then((response) => {
+        setMovie((prevState) => {
+          prevState.reviews.splice(index, 1);
+          return { ...prevState };
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+  // 22540008
   return (
     <div>
       <Container>
@@ -46,9 +61,7 @@ const Movie = (props) => {
               <Card.Body>
                 <Card.Text>{movie.plot}</Card.Text>
                 {props.user && (
-                  <Link to={"/movies/" + props.match.params.id + "/review"}>
-                    Add Review
-                  </Link>
+                  <Link to={"/movies/" + id + "/review"}>Add Review</Link>
                 )}
               </Card.Body>
             </Card>
@@ -60,24 +73,36 @@ const Movie = (props) => {
                 // 22540008: Media component is deprecated, use Card instead
                 <Card key={index} border="0">
                   <Card.Body>
-                    <h5>{review.name + " reviewed on "}
-                      {moment(review.date).format("Do MMMM YYYY")}</h5>
+                    <h5>
+                      {review.name + " reviewed on "}
+                      {moment(review.date).format("Do MMMM YYYY")}
+                    </h5>
                     <p>{review.review}</p>
                     {props.user && props.user.id === review.user_id && (
                       <Row>
                         <Col>
-                          <Link
-                            to={{
-                              pathname:
-                                "/movies/" + +props.match.params.id + "/review",
-                              state: { currentReview: review },
-                            }}
+                          {/* Từ React Router v6.0. Link chỉ dùng để tạo các liên kết đơn giản giữa các trang, không hỗ trợ truyền state như một prop. useNavigate là hook cho phép điều hướng thay thế cho useHistory, cho phép truyền dữ liệu qua trạng thái (state, để truyền dữ liệu mà không hiển thị trên URL) */}
+                          <Button
+                            variant="link"
+                            onClick={() =>
+                              navigate(`/movies/${id}/review`, {
+                                state: {
+                                  currentReview: review,
+                                  user: props.user,
+                                },
+                              })
+                            }
                           >
                             Edit
-                          </Link>
+                          </Button>
                         </Col>
                         <Col>
-                          <Button variant="link">Delete</Button>
+                          <Button
+                            variant="link"
+                            onClick={() => deleteReview(review._id, index)}
+                          >
+                            Delete
+                          </Button>
                         </Col>
                       </Row>
                     )}
@@ -93,11 +118,3 @@ const Movie = (props) => {
 };
 
 export default Movie;
-
-// function Movie() {
-//   return (
-//     <div className="App">
-//       Movie
-//     </div>
-//   );
-// }
